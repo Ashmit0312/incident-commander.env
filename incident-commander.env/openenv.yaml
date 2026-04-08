@@ -1,0 +1,93 @@
+colorFrom: blue
+colorTo: red
+name: incident-commander
+version: "1.0.0"
+description: >
+  An OpenEnv environment for training and evaluating AI agents on infrastructure
+  incident response. The agent acts as an incident commander during production
+  outages — investigating alerts, diagnosing root causes, coordinating teams,
+  applying fixes, and communicating status updates under time pressure.
+
+author: "ashmit"
+license: "MIT"
+tags:
+  - openenv
+  - incident-response
+  - devops
+  - sre
+  - real-world
+
+interface:
+  observation_model: app.models.Observation
+  action_model: app.models.Action
+  reward_model: app.models.Reward
+  state_model: app.models.EnvironmentState
+
+endpoints:
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  health: GET /health
+  tasks: GET /tasks
+  grade: GET /grade
+
+tasks:
+  - id: easy
+    description: "Single service crash — clear logs, obvious root cause, 4 phases"
+    difficulty: easy
+    num_phases: 4
+    grader: app.grader.grade_episode
+
+  - id: medium
+    description: "Cascading failure from bad config — trace the chain across 3 services, 6 phases"
+    difficulty: medium
+    num_phases: 6
+    grader: app.grader.grade_episode
+
+  - id: hard
+    description: "Database corruption + active data breach — technical fix AND compliance handling, 8 phases"
+    difficulty: hard
+    num_phases: 8
+    grader: app.grader.grade_episode
+
+action_space:
+  action_type:
+    type: enum
+    values: [investigate, restart_service, rollback_deploy, scale_up, page_team, status_update, mitigate, skip]
+  target:
+    type: string
+    description: "Service name or team name (e.g., 'web-server', 'database', 'security', 'devops')"
+    optional: true
+  message:
+    type: string
+    description: "Status update text (required for status_update action)"
+    optional: true
+  reasoning:
+    type: string
+    description: "Agent's explanation for this decision"
+    optional: true
+
+observation_space:
+  alerts:
+    type: list[Alert]
+    description: "Active monitoring alerts with source, service, message, severity"
+  metrics:
+    type: SystemMetrics
+    description: "Current error rate, latency, CPU, memory, connections, RPS"
+  context:
+    type: IncidentContext
+    description: "Incident ID, start time, affected users, revenue impact, recent deploys"
+  log_snippets:
+    type: list[string]
+    description: "Log lines revealed by investigation actions"
+  actions_taken:
+    type: list[string]
+    description: "Summary of actions taken so far in this episode"
+  minutes_elapsed:
+    type: integer
+    description: "Minutes since incident started"
+  task_description:
+    type: string
+
+reward_range: [-1.0, 1.0]
+episode_grader_range: [0.0, 1.0]

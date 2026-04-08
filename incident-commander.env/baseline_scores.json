@@ -1,0 +1,9 @@
+{
+  "scores": {
+    "easy": 0.9471,
+    "medium": 0.985,
+    "hard": 0.9563
+  },
+  "average": 0.9628000000000001,
+  "model": "Qwen/Qwen2.5-72B-Instruct"
+}
